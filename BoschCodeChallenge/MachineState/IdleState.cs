@@ -19,7 +19,7 @@ namespace BoschCodeChallenge
             {
                 MachineId = Machine.MachineId,
                 Instruction = InstructionType.Start,
-                PartInfos = new List<Part> { new Part(Machine.MachineId, PartType.Shaft, Guid.NewGuid()) }
+                PartInfos = new List<Part> { new Part(Machine.MachineId, partType, Guid.NewGuid()) }
             };
 
             MachineManager.SendInstructionToMachine(instruction);

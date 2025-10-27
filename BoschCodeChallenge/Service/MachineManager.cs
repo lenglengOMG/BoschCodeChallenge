@@ -15,7 +15,7 @@ namespace BoschCodeChallenge
     public class MachineManager
     {
         private readonly List<Machine> _machines = new List<Machine>();
-        private readonly Dictionary<ProductionCell, List<Machine>> _cellMachineMapping = new Dictionary<ProductionCell, List<Machine>>();
+        private readonly Dictionary<ProductionCell, List<string>> _cellMachineMapping = new Dictionary<ProductionCell, List<string>>();
         private readonly List<Part> _parts = new List<Part>();
 
         private const string StatusQueueName = "machine_status_queue";
@@ -25,11 +25,13 @@ namespace BoschCodeChallenge
 
         public MachineManager()
         {
-            // Subscribe to messages from all machines
-            MessageRouter.Instance.SubScribeStatus(StatusQueueName, StatusRoutingKey, HandleStatus);
-            MessageRouter.Instance.SubScribeStatus(PartQueueName, PartRoutingKey, HandlePart);
+            // Load machines and production cells from data source
             LoadMachines();
             LoadProductionCells();
+
+            // Subscribe to messages from all machines
+            MessageRouter.Instance.SubScribeStatus(StatusQueueName, StatusRoutingKey, HandleStatus);
+            MessageRouter.Instance.SubScribePart(PartQueueName, PartRoutingKey, HandlePart);
         }
 
         private void HandleStatus(string message)
@@ -87,7 +89,7 @@ namespace BoschCodeChallenge
             _cellMachineMapping.Clear();
             // Load production cells and map machines to cells
             ProductionCell fakeCell = new ProductionCell("Cell_001", "Assembly Cell 1");
-            _cellMachineMapping.Add(fakeCell, new List<Machine> { _machines[0] });
+            _cellMachineMapping.Add(fakeCell, new List<string> { _machines[0].MachineId });
         }
 
         public void SaveMachines()
@@ -114,7 +116,7 @@ namespace BoschCodeChallenge
             List<Machine> machines = new List<Machine>();
             if (_cellMachineMapping.ContainsKey(cell))
             {
-                machines.AddRange(_cellMachineMapping[cell]);
+                machines.AddRange(_machines.Where(m => _cellMachineMapping[cell].Contains(m.MachineId)));
             }
             return machines;
         }
@@ -124,38 +126,38 @@ namespace BoschCodeChallenge
             List<Machine> machines = new List<Machine>();
             if (_cellMachineMapping.ContainsKey(cell))
             {
-                machines.AddRange(_cellMachineMapping[cell]);
+                machines.AddRange(_machines.Where(m => _cellMachineMapping[cell].Contains(m.MachineId)));
             }
             var subCells = cell.GetAllSubCellsRecursively();
             foreach (var subCell in subCells)
             {
                 if (_cellMachineMapping.ContainsKey(subCell))
                 {
-                    machines.AddRange(_cellMachineMapping[subCell]);
+                    machines.AddRange(_machines.Where(m => _cellMachineMapping[cell].Contains(m.MachineId)));
                 }
             }
             return machines;
         }
 
-        public bool AddMachineToCell(Machine machine, ProductionCell cell)
+        public bool AddMachineToCell(string machineId, ProductionCell cell)
         {
             if (!_cellMachineMapping.ContainsKey(cell))
             {
-                _cellMachineMapping[cell] = new List<Machine>();
+                _cellMachineMapping[cell] = new List<string>();
             }
-            if (!_cellMachineMapping[cell].Contains(machine))
+            if (!_cellMachineMapping[cell].Contains(machineId))
             {
-                _cellMachineMapping[cell].Add(machine);
+                _cellMachineMapping[cell].Add(machineId);
                 return true;
             }
             return false;
         }
 
-        public bool RemoveMachineFromCell(Machine machine, ProductionCell cell)
+        public bool RemoveMachineFromCell(string machineId, ProductionCell cell)
         {
-            if (_cellMachineMapping.ContainsKey(cell) && _cellMachineMapping[cell].Contains(machine))
+            if (_cellMachineMapping.ContainsKey(cell) && _cellMachineMapping[cell].Contains(machineId))
             {
-                _cellMachineMapping[cell].Remove(machine);
+                _cellMachineMapping[cell].Remove(machineId);
                 return true;
             }
             return false;
@@ -170,7 +172,7 @@ namespace BoschCodeChallenge
         {
             if (!_cellMachineMapping.ContainsKey(cell))
             {
-                _cellMachineMapping[cell] = new List<Machine>();
+                _cellMachineMapping[cell] = new List<string>();
                 return true;
             }
             return false;
