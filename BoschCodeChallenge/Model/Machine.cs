@@ -6,7 +6,7 @@ namespace BoschCodeChallenge
     public class Machine
     {
         private IMachineState _currentState;
-        private List<PartType> _supportedParts;
+        private readonly List<PartType> _supportedParts;
 
         public string MachineId { get; private set; }
         public string Location { get; set; }

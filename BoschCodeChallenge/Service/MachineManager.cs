@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -21,6 +22,8 @@ namespace BoschCodeChallenge
         private const string StatusRoutingKey = "machine.status";
         private const string PartQueueName = "machine_part_queue";
         private const string PartRoutingKey = "machine.part";
+
+        public event Action<Machine, StateType> OnMachineStatusChanged;
 
         public MachineManager()
         {
@@ -62,6 +65,8 @@ namespace BoschCodeChallenge
                             break;
                     }
                 }
+
+                OnMachineStatusChanged?.Invoke(machine, status);
             }
         }
 
