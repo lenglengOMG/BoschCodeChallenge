@@ -57,6 +57,11 @@ namespace BoschCodeChallenge
         /// <param name="newState"></param>
         public void SetOperationState(IMachineState newState)
         {
+            if (_currentState.State == StateType.UnderMaintenance && newState.State == StateType.Idle)
+            {
+                //Log maintanence completion time.
+            }
+
             _currentState = newState;
         }
 
