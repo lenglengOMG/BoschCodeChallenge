@@ -1,9 +1,11 @@
-﻿namespace BoschCodeChallenge
+﻿using System.Collections.Generic;
+
+namespace BoschCodeChallenge
 {
     public interface IMachineState
     {
         StateType State { get; }
-        bool Start(PartType partType);
+        bool Start(IEnumerable<Part> parts);
         bool Stop();
         bool Maintain();
     }

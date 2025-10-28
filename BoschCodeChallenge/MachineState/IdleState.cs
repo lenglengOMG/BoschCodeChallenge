@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace BoschCodeChallenge
 {
@@ -11,7 +11,7 @@ namespace BoschCodeChallenge
         {
         }
 
-        public override bool Start(PartType partType)
+        public override bool Start(IEnumerable<Part> parts)
         {
             Machine.SetOperationState(new RunningState(Machine, MachineManager));
 
@@ -19,7 +19,7 @@ namespace BoschCodeChallenge
             {
                 MachineId = Machine.MachineId,
                 Instruction = InstructionType.Start,
-                PartInfos = new List<Part> { new Part(Machine.MachineId, partType, Guid.NewGuid()) }
+                PartInfos = parts.ToList()
             };
 
             MachineManager.SendInstructionToMachine(instruction);

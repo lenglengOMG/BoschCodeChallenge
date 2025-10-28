@@ -4,19 +4,21 @@ namespace BoschCodeChallenge
 {
     public class ProductionCell
     {
-        private readonly string _searialNumber;
-        private readonly string _cellName;
-        private List<ProductionCell> _subCellsUnderCurrentCell = new List<ProductionCell>();
+        private readonly List<ProductionCell> _subCellsUnderCurrentCell = new List<ProductionCell>();
 
-        public string SearialNumber { get { return _searialNumber; } }
-        public string CellName { get { return _cellName; } }
+        public string SearialNumber { get; private set; }
+        public string CellName { get; private set; }
 
         public ProductionCell(string serialNumber, string cellName)
         {
-            this._searialNumber = serialNumber;
-            this._cellName = cellName;
+            SearialNumber = serialNumber;
+            CellName = cellName;
         }
 
+        /// <summary>
+        /// Get sub cells under current cell
+        /// </summary>
+        /// <returns></returns>
         public List<ProductionCell> GetSubCellsUnderCurrentCell()
         {
             List<ProductionCell> cells = new List<ProductionCell>();
@@ -24,6 +26,10 @@ namespace BoschCodeChallenge
             return cells;
         }
 
+        /// <summary>
+        /// Get all sub cells recursively
+        /// </summary>
+        /// <returns></returns>
         public List<ProductionCell> GetAllSubCellsRecursively()
         {
             List<ProductionCell> cells = new List<ProductionCell>();
@@ -35,11 +41,19 @@ namespace BoschCodeChallenge
             return cells;
         }
 
+        /// <summary>
+        /// Add sub cell to current cell
+        /// </summary>
+        /// <param name="cell"></param>
         public void AddSubCellToCurrentCell(ProductionCell cell)
         {
             _subCellsUnderCurrentCell.Add(cell);
         }
 
+        /// <summary>
+        /// Remove sub cell from current cell
+        /// </summary>
+        /// <param name="cell"></param>
         public void RemoveSubCellFromCurrentCell(ProductionCell cell)
         {
             _subCellsUnderCurrentCell.Remove(cell);

@@ -1,4 +1,6 @@
-﻿namespace BoschCodeChallenge
+﻿using System.Collections.Generic;
+
+namespace BoschCodeChallenge
 {
     public abstract class MachineState : IMachineState
     {
@@ -15,7 +17,7 @@
 
         public abstract bool Maintain();
 
-        public abstract bool Start(PartType partType);
+        public abstract bool Start(IEnumerable<Part> parts);
 
         public abstract bool Stop();
     }

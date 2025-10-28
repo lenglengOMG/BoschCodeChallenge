@@ -92,6 +92,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ClassVersion1.cs" />
     <Compile Include="MachineState\MachineState.cs" />
     <Compile Include="MachineState\RunningState.cs" />
     <Compile Include="MachineState\IdleState.cs" />

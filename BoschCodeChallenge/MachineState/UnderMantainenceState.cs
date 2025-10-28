@@ -1,4 +1,6 @@
-﻿namespace BoschCodeChallenge
+﻿using System.Collections.Generic;
+
+namespace BoschCodeChallenge
 {
     public class UnderMantainenceState : MachineState
     {
@@ -8,7 +10,7 @@
         {
         }
 
-        public override bool Start(PartType partType)
+        public override bool Start(IEnumerable<Part> parts)
         {
             return false;
         }

@@ -7,15 +7,14 @@ namespace BoschCodeChallenge
     /// <summary>
     /// Register as singleton to manage all machines
     /// 1. Communicate with MessageRouter to receive/send messages
-    /// 2. Manage machine states and production cells
+    /// 2. Manage machine, production cells and parts processed
     /// 3. Provide methods to start/stop/maintain machines and cells
     /// 4. Communicate with data source
-    /// A kind of adapter pattern
     /// </summary>
     public class MachineManager
     {
-        private readonly List<Machine> _machines = new List<Machine>();
         private readonly Dictionary<ProductionCell, List<string>> _cellMachineMapping = new Dictionary<ProductionCell, List<string>>();
+        private readonly List<Machine> _machines = new List<Machine>();
         private readonly List<Part> _parts = new List<Part>();
 
         private const string StatusQueueName = "machine_status_queue";
@@ -34,6 +33,10 @@ namespace BoschCodeChallenge
             MessageRouter.Instance.SubScribePart(PartQueueName, PartRoutingKey, HandlePart);
         }
 
+        /// <summary>
+        /// Handle machine status message from machine
+        /// </summary>
+        /// <param name="message"></param>
         private void HandleStatus(string message)
         {
             // Handle status message from machine
@@ -62,6 +65,10 @@ namespace BoschCodeChallenge
             }
         }
 
+        /// <summary>
+        /// Handle part production message from machine
+        /// </summary>
+        /// <param name="message"></param>
         private void HandlePart(string message)
         {
             // Handle part message from machine
@@ -75,6 +82,9 @@ namespace BoschCodeChallenge
             }
         }
 
+        /// <summary>
+        /// Load machines from data source
+        /// </summary>
         public void LoadMachines()
         {
             _machines.Clear();
@@ -84,6 +94,9 @@ namespace BoschCodeChallenge
             _machines.Add(fakeMachine);
         }
 
+        /// <summary>
+        /// Load production cells from data source
+        /// </summary>
         public void LoadProductionCells()
         {
             _cellMachineMapping.Clear();
@@ -92,16 +105,26 @@ namespace BoschCodeChallenge
             _cellMachineMapping.Add(fakeCell, new List<string> { _machines[0].MachineId });
         }
 
+        /// <summary>
+        /// Save machines to data source
+        /// </summary>
         public void SaveMachines()
         {
             // Save machines to data source
         }
 
+        /// <summary>
+        /// Save production cells to data source
+        /// </summary>
         public void SaveProductionCells()
         {
             // Save production cells to data source
         }
 
+        /// <summary>
+        /// Get all registered machines
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<Machine> GetAllMachines()
         {
             List<Machine> machines = new List<Machine>();
@@ -111,6 +134,11 @@ namespace BoschCodeChallenge
             return machines;
         }
 
+        /// <summary>
+        /// Get machines under a specific production cell
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <returns></returns>
         public IEnumerable<Machine> GetMachinesUnderCurrentCell(ProductionCell cell)
         {
             List<Machine> machines = new List<Machine>();
@@ -121,6 +149,11 @@ namespace BoschCodeChallenge
             return machines;
         }
 
+        /// <summary>
+        /// Get all machines under a production cell recursively
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <returns></returns>
         public IEnumerable<Machine> GetAllMachinesByCellRecursively(ProductionCell cell)
         {
             List<Machine> machines = new List<Machine>();
@@ -139,6 +172,12 @@ namespace BoschCodeChallenge
             return machines;
         }
 
+        /// <summary>
+        /// Add machine to a production cell
+        /// </summary>
+        /// <param name="machineId"></param>
+        /// <param name="cell"></param>
+        /// <returns></returns>
         public bool AddMachineToCell(string machineId, ProductionCell cell)
         {
             if (!_cellMachineMapping.ContainsKey(cell))
@@ -153,6 +192,12 @@ namespace BoschCodeChallenge
             return false;
         }
 
+        /// <summary>
+        /// Remove machine from a production cell
+        /// </summary>
+        /// <param name="machineId"></param>
+        /// <param name="cell"></param>
+        /// <returns></returns>
         public bool RemoveMachineFromCell(string machineId, ProductionCell cell)
         {
             if (_cellMachineMapping.ContainsKey(cell) && _cellMachineMapping[cell].Contains(machineId))
@@ -163,11 +208,21 @@ namespace BoschCodeChallenge
             return false;
         }
 
+        /// <summary>
+        /// Remove a production cell
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <returns></returns>
         public bool RemoveCell(ProductionCell cell)
         {
             return _cellMachineMapping.Remove(cell);
         }
 
+        /// <summary>
+        /// Add a production cell
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <returns></returns>
         public bool AddCell(ProductionCell cell)
         {
             if (!_cellMachineMapping.ContainsKey(cell))
@@ -178,7 +233,13 @@ namespace BoschCodeChallenge
             return false;
         }
 
-        public bool StartCell(ProductionCell cell, PartType partType)
+        /// <summary>
+        /// Start all machines under a production cell recursively
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <param name="partType"></param>
+        /// <returns></returns>
+        public bool StartCell(ProductionCell cell, IEnumerable<Part> parts)
         {
             if (!_cellMachineMapping.ContainsKey(cell))
             {
@@ -190,7 +251,7 @@ namespace BoschCodeChallenge
             var result = true;
             foreach (var machine in machines)
             {
-                if (!machine.Start(partType))
+                if (!machine.Start(parts))
                 {
                     result = false;
                 }
@@ -199,6 +260,11 @@ namespace BoschCodeChallenge
             return result;
         }
 
+        /// <summary>
+        /// Stop all machines under a production cell recursively
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <returns></returns>
         public bool StopCell(ProductionCell cell)
         {
             if (!_cellMachineMapping.ContainsKey(cell))
